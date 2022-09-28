@@ -49,6 +49,34 @@ public class Handler {
         return ServerResponse.ok ( ).body (exampleMonoWhithZip (),String.class);
     }
 
+    public Mono < ServerResponse > listenGETUseCaseDefaultEmpy( ServerRequest serverRequest ) {
+
+        return ServerResponse.ok ( ).body (exampleDefaultEmpy (),String.class);
+
+    }
+
+    public Mono < ServerResponse > listenGETUseCaseSwitchEmpy( ServerRequest serverRequest ) {
+
+        return ServerResponse.ok ( ).body (exampleSwitchIfEmpy (),String.class);
+    }
+
+    public Mono < ServerResponse > listenGETUseCaseOnErrorResume( ServerRequest serverRequest ) {
+        int reqI = Integer.parseInt(serverRequest.queryParam ("reqI").orElse ( "-1" ));
+
+        return ServerResponse.ok ( ).body (exampleOnErrorResume (reqI),Integer.class);
+    }
+
+    public Mono < ServerResponse > listenGETUseCaseOnErrorContinue( ServerRequest serverRequest ) {
+        int reqI = Integer.parseInt(serverRequest.queryParam ("reqI").orElse ( "-1" ));
+
+        return ServerResponse.ok ( ).body (exampleOnErrorContinue (reqI),Integer.class);
+    }
+
+
+
+
+
+
 
 
 
@@ -159,6 +187,50 @@ public class Handler {
                 .map ( data -> data.getT1 ().concat ( "-" ).concat ( String.valueOf ( data.getT2 () ) ) );
     }
 
+
+    //si no  se encuentra la letra filtrada se retorna un valor por defecto un mensaje
+    private Mono < String > exampleDefaultEmpy ( ){
+        Flux < String > list = Flux.fromIterable ( Arrays.asList ( "o" , "ab" , "ac" , "d" , "e" ) );
+        return list
+                .filter ( data -> data.contains ( "z" ) )
+                .defaultIfEmpty ( "No se encontro la letra z" )
+                .reduce ( ( subtotal , data ) -> subtotal.concat ( "-" ).concat ( data ) );
+
+    }
+// defaultIfEmpty retorna un objeto y en switchIfEmpty  retorna un publicador del mismo proceso asincrono
+    private Mono < String > exampleSwitchIfEmpy ( ){
+        Flux < String > list = Flux.fromIterable ( Arrays.asList ( "a" , "ab" , "ac" , "d" , "e" ) );
+        return list
+                .filter ( data -> data.contains ( "a" ) )
+                .reduce ( ( subtotal , data ) -> subtotal.concat ( "-" ).concat ( data ) )
+                .switchIfEmpty (exampleDefaultEmpy () );
+
+    }
+//onErrorResume detiene un flujo y crea un flujo alterno
+    private Mono < Integer> exampleOnErrorResume (int reqI ){
+        return  Flux.range ( 20 , 30 )
+                .doOnNext ( i -> System.out.println ( "input: " +i ) )
+                .map ( i -> i/reqI )
+                .reduce ( ( subtotal , i ) -> subtotal+ i )
+                .onErrorResume ( e -> {
+                    System.out.println ( "Ocurrio un error: " +e.getMessage () );
+                    return Mono.just ( -1);
+                } );
+    }
+
+//onErrorContinue va continuar con el siguiente iterador del flux solo se puede utilizar en flux
+    //onErrorResume se puede utilizar en flux y en mono porque encuentra un error y lo detiene
+    private Mono<Integer> exampleOnErrorContinue(int reqI) {
+        return Flux.range(1, 5)
+                .doOnNext(i -> System.out.println("input: " + i))
+                .map(i -> i == reqI ? i / 0 : i)
+                .onErrorContinue ( ( error , i ) -> {
+                    System.out.println ( "Ocurrio un error: " +error.getMessage () );
+                    System.out.println ( "Valor que genero el error: " +i );
+                } )
+                .reduce((subtotal, i) -> subtotal + i);
+
+    }
 
 
 

@@ -19,6 +19,10 @@ public RouterFunction < ServerResponse > routerFunction ( Handler handler ) {
             .andRoute ( GET ( "/api/usecase/path/flux/merge" ) , handler :: listenGETUseCaseMergeFlux )
             .andRoute ( GET ( "/api/usecase/path/flux/mergeWith" ) , handler :: listenGETUseCaseMergeWithFlux )
             .andRoute ( GET ( "/api/usecase/path/flux/zip" ) , handler :: listenGETUseCaseMonoZip )
-            .andRoute ( GET ( "/api/usecase/path/flux/zipWith" ) , handler :: listenGETUseCaseMonoWithZip );
+            .andRoute ( GET ( "/api/usecase/path/flux/zipWith" ) , handler :: listenGETUseCaseMonoWithZip )
+            .andRoute ( GET ( "/api/usecase/path/flux/defaultEmpy" ) , handler :: listenGETUseCaseDefaultEmpy )
+            .andRoute ( GET ( "/api/usecase/path/flux/switchEmpy" ) , handler :: listenGETUseCaseSwitchEmpy )
+            .andRoute ( GET ( "/api/usecase/path/flux/onErrorResume" ) , handler :: listenGETUseCaseOnErrorResume)
+            .andRoute ( GET ( "/api/usecase/path/flux/onErrorContinue" ) , handler :: listenGETUseCaseOnErrorContinue);
 }
 }
